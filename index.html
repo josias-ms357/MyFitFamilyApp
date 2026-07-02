@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Forja</title>
-<meta name="application-name" content="Forja">
+<title>My Family Fit</title>
+<meta name="application-name" content="My Family Fit">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Forja">
+<meta name="apple-mobile-web-app-title" content="My Family Fit">
 <meta name="theme-color" content="#121212">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Forja%20%E2%80%94%20Treino%20%26%20Dieta%22%2C%22short_name%22%3A%22Forja%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23121212%22%2C%22theme_color%22%3A%22%23121212%22%2C%22description%22%3A%22App%20de%20treino%20e%20dieta%20personalizado%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%2527http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%2527%2520viewBox%3D%25270%25200%2520100%2520100%2527%253E%253Crect%2520width%3D%2527100%2527%2520height%3D%2527100%2527%2520rx%3D%252720%2527%2520fill%3D%2527%252300e676%2527%2F%253E%253Ctext%2520y%3D%2527.9em%2527%2520font-size%3D%252770%2527%2520x%3D%252715%2527%253EF%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+<link rel="manifest" href="manifest.json">
 <style>
   :root {
     --bg: #121212;
@@ -142,8 +142,8 @@
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="brand">
-      <div class="brand-mark">F</div>
-      <div class="brand-name">Forja</div>
+      <div class="brand-mark">MFF</div>
+      <div class="brand-name">My Family Fit</div>
     </div>
     <div class="profile-switch">
       <button id="btnMarido" class="active" onclick="setUser('marido')">Josias</button>
@@ -921,7 +921,7 @@ function clearShop() {
   // Registra service worker para PWA instalável
   if ('serviceWorker' in navigator) {
     const swCode = `
-      const CACHE = 'forja-v1';
+      const CACHE = 'mff-v1';
       self.addEventListener('install', e => {
         e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html'])));
         self.skipWaiting();
