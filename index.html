@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>My Family Fit</title>
+<meta name="application-name" content="My Family Fit">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My Family Fit">
+<meta name="theme-color" content="#121212">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root {
+    --bg: #121212;
+    --card: #1c1c1c;
+    --card-raised: #232323;
+    --line: #2e2e2e;
+    --green: #00e676;
+    --green-dim: #00a855;
+    --text: #f2f2f2;
+    --text-dim: #9a9a9a;
+    --text-faint: #5e5e5e;
+    --red: #ff5252;
+    --yellow: #ffd740;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+  #app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+  .screen { flex: 1; padding: 16px 18px 110px; animation: fadein .22s ease; }
+  @keyframes fadein { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+
+  /* topbar */
+  .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px 18px 6px; }
+  .brand { display:flex; align-items:center; gap:9px; }
+  .brand-mark { width:28px; height:28px; border-radius:7px; background:linear-gradient(135deg,var(--green),var(--green-dim)); display:flex; align-items:center; justify-content:center; font-weight:800; color:#0a0a0a; font-size:14px; }
+  .brand-name { font-weight:700; font-size:16px; letter-spacing:.3px; }
+  .profile-switch { display:flex; background:var(--card); border-radius:100px; padding:3px; border:1px solid var(--line); }
+  .profile-switch button { border:none; background:transparent; color:var(--text-dim); font-size:11.5px; font-weight:600; padding:5px 11px; border-radius:100px; transition:all .2s; }
+  .profile-switch button.active { background:var(--green); color:#0a0a0a; }
+
+  /* type */
+  h1 { font-size:21px; font-weight:800; letter-spacing:-.3px; margin-bottom:4px; }
+  h2 { font-size:17px; font-weight:700; margin-bottom:12px; }
+  .subtitle { color:var(--text-dim); font-size:13.5px; margin-bottom:22px; line-height:1.5; }
+  .eyebrow { color:var(--green); font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; margin-bottom:5px; }
+
+  /* cards */
+  .card { background:var(--card); border:1px solid var(--line); border-radius:15px; padding:16px; margin-bottom:12px; }
+  .card-title { font-size:14px; font-weight:700; margin-bottom:11px; display:flex; align-items:center; gap:7px; }
+
+  /* chips / buttons */
+  .btn-group { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:4px; }
+  .chip { flex:1; min-width:80px; background:var(--card-raised); border:1px solid var(--line); color:var(--text); padding:13px 8px; border-radius:11px; font-size:13px; font-weight:600; text-align:center; transition:all .15s; cursor:pointer; }
+  .chip.selected { background:var(--green); color:#0a0a0a; border-color:var(--green); }
+  .chip:active { transform:scale(.97); }
+  .btn-primary { width:100%; background:var(--green); color:#0a0a0a; border:none; padding:15px; border-radius:13px; font-size:14.5px; font-weight:700; margin-top:6px; transition:opacity .15s; cursor:pointer; }
+  .btn-primary:active { opacity:.85; }
+  .btn-primary:disabled { background:var(--card-raised); color:var(--text-faint); }
+  .btn-secondary { width:100%; background:transparent; color:var(--text-dim); border:1px solid var(--line); padding:13px; border-radius:13px; font-size:13.5px; font-weight:600; cursor:pointer; margin-top:6px; }
+  .btn-danger { width:100%; background:transparent; color:var(--red); border:1px solid var(--red); padding:13px; border-radius:13px; font-size:13.5px; font-weight:600; cursor:pointer; margin-top:6px; }
+
+  /* time input */
+  .time-row { display:flex; align-items:center; gap:10px; background:var(--card-raised); border:1px solid var(--line); border-radius:11px; padding:9px 13px; margin-bottom:10px; }
+  .time-row input[type=time] { background:transparent; border:none; color:var(--text); font-size:17px; font-weight:700; font-family:inherit; flex:1; color-scheme:dark; }
+
+  /* bottom nav */
+  .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px; background:rgba(18,18,18,.95); backdrop-filter:blur(14px); border-top:1px solid var(--line); display:flex; padding:7px 6px calc(7px + env(safe-area-inset-bottom)); z-index:50; }
+  .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:5px 0; color:var(--text-faint); font-size:10px; font-weight:600; background:none; border:none; cursor:pointer; }
+  .nav-item.active { color:var(--green); }
+  .nav-icon { font-size:19px; line-height:1; }
+
+  /* misc */
+  .hidden { display:none !important; }
+  .progress-dots { display:flex; gap:5px; justify-content:center; margin-bottom:26px; }
+  .dot { width:6px; height:6px; border-radius:50%; background:var(--line); transition:all .2s; }
+  .dot.active { background:var(--green); width:16px; border-radius:3px; }
+
+  /* meal list */
+  .meal-item { display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--line); }
+  .meal-item:last-child { border-bottom:none; padding-bottom:0; }
+  .meal-time { min-width:40px; color:var(--green); font-size:12px; font-weight:700; padding-top:1px; }
+  .meal-name { font-size:13.5px; font-weight:700; margin-bottom:3px; }
+  .meal-items { color:var(--text-dim); font-size:12.5px; line-height:1.55; }
+  .meal-tag { display:inline-block; background:rgba(0,230,118,.12); color:var(--green); font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:5px; margin-top:4px; }
+
+  /* exercise list */
+  .ex-item { padding:13px 0; border-bottom:1px solid var(--line); }
+  .ex-item:last-child { border-bottom:none; }
+  .ex-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+  .ex-name { font-size:14px; font-weight:700; }
+  .ex-meta { color:var(--text-dim); font-size:12.5px; }
+  .ex-sets { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .set-box { background:var(--card-raised); border:1px solid var(--line); border-radius:8px; padding:7px 10px; font-size:12px; color:var(--text-dim); min-width:52px; text-align:center; cursor:pointer; transition:all .15s; }
+  .set-box.done { background:rgba(0,230,118,.15); border-color:var(--green); color:var(--green); font-weight:700; }
+  .ex-note { color:var(--text-faint); font-size:11.5px; margin-top:5px; font-style:italic; }
+
+  /* timer */
+  #timerOverlay { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:200; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; }
+  #timerCircle { width:160px; height:160px; border-radius:50%; border:4px solid var(--green); display:flex; align-items:center; justify-content:center; flex-direction:column; }
+  #timerCount { font-size:48px; font-weight:800; color:var(--green); }
+  #timerLabel { font-size:12px; color:var(--text-dim); font-weight:600; }
+  #timerMsg { color:var(--text-dim); font-size:14px; }
+  #timerSkip { background:var(--card); border:1px solid var(--line); color:var(--text-dim); padding:10px 28px; border-radius:30px; font-size:13px; font-weight:600; cursor:pointer; }
+
+  /* progress bar */
+  .progress-bar-wrap { background:var(--card-raised); border-radius:6px; height:6px; margin-top:10px; overflow:hidden; }
+  .progress-bar-fill { height:100%; background:var(--green); border-radius:6px; transition:width .4s; }
+
+  /* badge */
+  .badge { display:inline-flex; align-items:center; gap:4px; background:rgba(0,230,118,.12); color:var(--green); font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; }
+  .badge-red { background:rgba(255,82,82,.12); color:var(--red); }
+  .badge-yellow { background:rgba(255,215,64,.12); color:var(--yellow); }
+
+  /* input */
+  .input-field { width:100%; background:var(--card-raised); border:1px solid var(--line); border-radius:11px; padding:12px 14px; color:var(--text); font-size:14px; font-family:inherit; }
+  .input-field:focus { outline:1px solid var(--green); }
+  label.field-label { display:block; color:var(--text-dim); font-size:12px; font-weight:600; margin-bottom:5px; }
+
+  /* section divider */
+  .section-gap { margin-top:20px; }
+  .divider { height:1px; background:var(--line); margin:16px 0; }
+
+  /* alert strip */
+  .alert { background:rgba(255,215,64,.08); border:1px solid rgba(255,215,64,.25); border-radius:11px; padding:12px 14px; margin-bottom:12px; font-size:13px; color:var(--yellow); line-height:1.5; }
+
+  /* empty */
+  .empty { text-align:center; padding:50px 20px; color:var(--text-dim); }
+  .empty .ico { font-size:36px; margin-bottom:10px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">MFF</div>
+      <div class="brand-name">My Family Fit</div>
+    </div>
+    <div class="profile-switch">
+      <button id="btnMarido" class="active" onclick="setUser('marido')">Josias</button>
+      <button id="btnEsposa" onclick="setUser('esposa')">Queila</button>
+    </div>
+  </div>
+
+  <!-- ===== ÂNCORAS ===== -->
+  <div id="screen-anchors" class="screen">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <button id="anchorBackBtn" class="hidden" onclick="prevAnchorStep()" style="background:var(--card);border:1px solid var(--line);color:var(--text-dim);padding:7px 14px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer">← Voltar</button>
+      <div style="flex:1"></div>
+    </div>
+    <div class="progress-dots" id="anchorDots">
+      <div class="dot active"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="anchor-step" id="step-0">
+      <div class="eyebrow">Bom dia</div>
+      <h1>Vai treinar hoje?</h1>
+      <p class="subtitle">Isso ajusta sua dieta do dia inteiro</p>
+      <div class="btn-group">
+        <button class="chip" onclick="selectAnchor('treina','sim',this)">Sim</button>
+        <button class="chip" onclick="selectAnchor('treina','nao',this)">Não</button>
+        <button class="chip" onclick="selectAnchor('treina','talvez',this)">Ainda não sei</button>
+      </div>
+    </div>
+    <div class="anchor-step hidden" id="step-1">
+      <div class="eyebrow">Horário</div>
+      <h1>Que horas pretende treinar?</h1>
+      <p class="subtitle">Calcula pré e pós treino automaticamente</p>
+      <div class="card">
+        <div class="time-row"><span>🕒</span><input type="time" id="inputTreinoHora" value="21:00"></div>
+      </div>
+      <button class="btn-primary" onclick="nextAnchorStep()">Continuar</button>
+    </div>
+    <div class="anchor-step hidden" id="step-2">
+      <div class="eyebrow">Rotina</div>
+      <h1 id="stepEmpresaTitle">Vai à empresa hoje?</h1>
+      <p class="subtitle" id="stepEmpresaSub">O café da manhã e o almoço mudam nesse dia</p>
+      <div class="btn-group" id="stepEmpresaBtns">
+        <button class="chip" onclick="selectAnchor('empresa','sim',this)">Sim</button>
+        <button class="chip" onclick="selectAnchor('empresa','nao',this)">Não</button>
+      </div>
+    </div>
+    <div class="anchor-step hidden" id="step-3">
+      <div class="eyebrow">Última pergunta</div>
+      <h1>Que horas acordou hoje?</h1>
+      <p class="subtitle">Define o horário da primeira refeição</p>
+      <div class="card">
+        <div class="time-row"><span>☀️</span><input type="time" id="inputAcordouHora" value="08:00"></div>
+      </div>
+      <button class="btn-primary" onclick="finishAnchors()">Montar meu dia →</button>
+    </div>
+  </div>
+
+  <!-- ===== HOJE ===== -->
+  <div id="screen-today" class="screen hidden">
+    <div class="eyebrow" id="todayEyebrow">Hoje</div>
+    <h1 id="todayTitle">Seu plano do dia</h1>
+    <p class="subtitle" id="todaySubtitle">—</p>
+    <div id="todayAlertWrap"></div>
+    <div class="card" id="cardTodayTrain">
+      <div class="card-title">🏋️ Treino de hoje</div>
+      <div id="todayTrainBody"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🍽️ Refeições de hoje</div>
+      <div id="todayMealsBody"></div>
+    </div>
+    <div class="divider"></div>
+    <button class="btn-secondary" onclick="resetAnchors()">↺ Refazer perguntas do dia</button>
+  </div>
+
+  <!-- ===== TREINO ===== -->
+  <div id="screen-train" class="screen hidden">
+    <div class="eyebrow">Treino</div>
+    <h1 id="trainTitle">Ficha do dia</h1>
+    <p class="subtitle" id="trainSubtitle">Selecione qual treino fazer hoje</p>
+    <div class="btn-group" style="margin-bottom:16px">
+      <button class="chip" onclick="loadWorkout('A',this)">A — Peito</button>
+      <button class="chip" onclick="loadWorkout('B',this)">B — Pernas</button>
+      <button class="chip" onclick="loadWorkout('C',this)">C — Costas</button>
+      <button class="chip" onclick="loadWorkout('X',this)">X — Caliste</button>
+    </div>
+    <div id="workoutBody"></div>
+  </div>
+
+  <!-- ===== DIETA ===== -->
+  <div id="screen-diet" class="screen hidden">
+    <div class="eyebrow">Dieta</div>
+    <h1>Plano alimentar</h1>
+    <p class="subtitle" id="dietSubtitle">Refeições completas do seu plano</p>
+    <div id="dietBody"></div>
+  </div>
+
+  <!-- ===== HISTÓRICO ===== -->
+  <div id="screen-history" class="screen hidden">
+    <div class="eyebrow">Histórico</div>
+    <h1>Sua evolução</h1>
+    <p class="subtitle">Registre seu peso e acompanhe as cargas</p>
+    <div class="card">
+      <div class="card-title" id="weightCardTitle">⚖️ Registrar peso hoje</div>
+      <label class="field-label">Peso (kg)</label>
+      <input class="input-field" type="number" step="0.1" id="weightInput" placeholder="ex: 73.5">
+      <button class="btn-primary" style="margin-top:10px" onclick="saveWeight()">Salvar</button>
+    </div>
+    <div class="card">
+      <div class="card-title">📈 Histórico de peso</div>
+      <div id="weightHistory"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏋️ Cargas por exercício</div>
+      <div id="loadHistory"></div>
+    </div>
+  </div>
+
+  <!-- ===== COMPRAS ===== -->
+  <div id="screen-shop" class="screen hidden">
+    <div class="eyebrow">Lista de compras</div>
+    <h1>Semana atual</h1>
+    <p class="subtitle">Para os dois — dentro de R$150-175</p>
+    <div id="shopBody"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav hidden" id="bottomNav">
+    <button class="nav-item active" onclick="goTab('today',this)"><span class="nav-icon">🏠</span>Hoje</button>
+    <button class="nav-item" onclick="goTab('train',this)"><span class="nav-icon">🏋️</span>Treino</button>
+    <button class="nav-item" onclick="goTab('diet',this)"><span class="nav-icon">🍽️</span>Dieta</button>
+    <button class="nav-item" onclick="goTab('history',this)"><span class="nav-icon">📊</span>Histórico</button>
+    <button class="nav-item" onclick="goTab('shop',this)"><span class="nav-icon">🛒</span>Compras</button>
+  </div>
+
+  <!-- TIMER OVERLAY -->
+  <div id="timerOverlay" class="hidden">
+    <div id="timerCircle">
+      <div id="timerCount">60</div>
+      <div id="timerLabel">seg de descanso</div>
+    </div>
+    <div id="timerMsg">Próxima série em breve...</div>
+    <button id="timerSkip" onclick="stopTimer()">Pular ▶</button>
+  </div>
+
+</div>
+<script>
+// ============================================================
+// DADOS BASE
+// ============================================================
+const PROFILES = {
+  marido: { label: 'Josias', peso: 73, altura: 170 },
+  esposa: { label: 'Queila', peso: 78, altura: 164 }
+};
+
+const MEALS_MARIDO_NORMAL = [
+  { name: 'Café da manhã', items: '3 ovos cozidos • 2 fatias queijo muçarela\nLeite integral 200ml + Nescau • 1 fruta\nSuco natural com stévia', tag: null },
+  { name: 'Almoço', items: 'Arroz 4 col. sopa • Feijão 1 concha\n150g proteína grelhada • Legumes à vontade\nSuco natural com stévia', tag: null },
+  { name: 'Lanche da tarde', items: '1 pote iogurte grego • 4 col. aveia\nLeite 200ml + Nescau • 1 fruta\nSuco natural com stévia', tag: null },
+  { name: 'Pré treino', items: '200g batata doce cozida • 120g frango grelhado\nSuco de beterraba + laranja com stévia', tag: 'Comer 60-90min antes do treino' },
+  { name: 'Pós treino', items: '3 ovos cozidos • 1 pote iogurte grego\n1 fatia queijo muçarela\nÁgua ou chá sem açúcar', tag: 'Sem carbo pesado aqui' }
+];
+
+const MEALS_MARIDO_EMPRESA = [
+  { name: 'Café rápido', items: '2 ovos cozidos (feitos na véspera)\n1 banana • Leite 200ml + Nescau', tag: 'Prepare os ovos na noite anterior!' },
+  { name: 'Almoço (empresa)', items: 'Arroz 3-4 col. • Feijão 1 concha\n150g proteína grelhada • Salada à vontade\n✅ Evite: frituras e molhos pesados', tag: 'Buffet livre' },
+  { name: 'Lanche da tarde', items: '1 pote iogurte grego • 4 col. aveia\nLeite 200ml + Nescau • 1 fruta\nSuco natural com stévia', tag: null },
+  { name: 'Pré treino', items: '200g batata doce • 120g frango\nSuco de beterraba com stévia', tag: 'Comer 60-90min antes' },
+  { name: 'Pós treino', items: '3 ovos cozidos • 1 pote iogurte grego\n1 fatia queijo • Água ou chá', tag: 'Sem carbo pesado' }
+];
+
+const MEALS_ESPOSA_NORMAL = [
+  { name: 'Café da manhã', items: '2 ovos cozidos • 1 fatia queijo muçarela\nLeite 150ml + Nescau • 1 banana pequena\nSuco natural com stévia', tag: null },
+  { name: 'Almoço', items: 'Arroz 2 col. sopa • Feijão 1 concha pequena\n120g proteína grelhada • Legumes à vontade\nSuco natural com stévia', tag: null },
+  { name: 'Lanche da tarde', items: '1 pote iogurte grego • 2 col. aveia\nLeite 150ml + Nescau • 1 fruta pequena\nSuco natural com stévia', tag: null },
+  { name: 'Pré treino', items: '150g batata doce • 100g frango grelhado\nSuco de beterraba + laranja com stévia', tag: 'Comer 60-90min antes' },
+  { name: 'Pós treino', items: '2 ovos cozidos • 1 pote iogurte grego\n1 fatia queijo muçarela\nÁgua ou chá', tag: 'Sem carbo pesado' }
+];
+
+// Sem pré/pós treino em dias sem treino
+const MEALS_NO_TRAIN_MARIDO = [
+  MEALS_MARIDO_NORMAL[0],
+  MEALS_MARIDO_NORMAL[1],
+  MEALS_MARIDO_NORMAL[2],
+  { name: 'Jantar', items: '150g proteína • Legumes à vontade\nArroz 3 col. sopa • Suco natural', tag: null }
+];
+
+const MEALS_NO_TRAIN_ESPOSA = [
+  MEALS_ESPOSA_NORMAL[0],
+  MEALS_ESPOSA_NORMAL[1],
+  MEALS_ESPOSA_NORMAL[2],
+  { name: 'Jantar', items: '120g proteína • Legumes à vontade\nArroz 2 col. sopa • Suco natural', tag: null }
+];
+
+// ============================================================
+// TREINOS
+// ============================================================
+const WORKOUTS = {
+  A: {
+    label: 'Treino A — Peito, Ombro e Bíceps',
+    note: '⚠️ Ombro sensível: mantenha 3kg na elevação lateral e pare se doer.',
+    exercises: [
+      { name: 'Supino Reto com Halteres', sets: 4, reps: '10', rest: 60, carga: '8-10kg cada', note: 'Cotovelos levemente fechados. Desce devagar.' },
+      { name: 'Supino Inclinado com Halteres', sets: 3, reps: '10', rest: 60, carga: '6-8kg cada', note: 'Banco a 30-45°.' },
+      { name: 'Crucifixo com Halteres', sets: 3, reps: '12', rest: 60, carga: '6-8kg cada', note: 'Cotovelos levemente dobrados, nunca travados.' },
+      { name: 'Elevação Lateral com Halteres', sets: 3, reps: '12', rest: 60, carga: '3kg ⚠️', note: 'Só até a altura do ombro. Para se doer.' },
+      { name: 'Elevação Frontal com Halter', sets: 3, reps: '10', rest: 60, carga: '4-5kg', note: 'Alternado. Costas retas.' },
+      { name: 'Rosca Direta com Barra', sets: 3, reps: '10', rest: 60, carga: 'Barra 10kg total', note: 'Cotovelo fixo. Desce devagar.' },
+      { name: 'Rosca Martelo com Halteres', sets: 3, reps: '12', rest: 60, carga: 'Mesma da rosca direta', note: 'Pegada neutra.' }
+    ]
+  },
+  B: {
+    label: 'Treino B — Pernas',
+    note: '💪 Não pule pernas. É o treino que mais acelera seus resultados.',
+    exercises: [
+      { name: 'Agachamento com Halteres', sets: 4, reps: '10', rest: 60, carga: '8-10kg cada', note: 'Lombar reta. Joelhos acompanham os pés.' },
+      { name: 'Leg Press', sets: 4, reps: '10', rest: 60, carga: 'Máquina + 10kg cada lado', note: 'Quadril não sai do banco.' },
+      { name: 'Cadeira Extensora', sets: 3, reps: '12', rest: 60, carga: 'Leve — últimas 3 reps difíceis', note: 'Não trava joelho no topo.' },
+      { name: 'Mesa Flexora', sets: 3, reps: '12', rest: 60, carga: 'Leve — últimas 3 reps difíceis', note: 'Não deixa o peso cair.' },
+      { name: 'Panturrilha em Pé (Máquina)', sets: 4, reps: '15', rest: 60, carga: 'Peso do corpo ou leve', note: 'Segura 1s no topo. Desce até alongar.' },
+      { name: 'Panturrilha Sentado (Máquina)', sets: 3, reps: '15', rest: 60, carga: 'Leve', note: 'Mesmo padrão.' }
+    ]
+  },
+  C: {
+    label: 'Treino C — Costas, Trapézio e Tríceps',
+    note: '🔑 Puxe com o cotovelo, não com a mão. Ombros sempre para baixo.',
+    exercises: [
+      { name: 'Puxada Frontal no Pulley', sets: 4, reps: '10', rest: 60, carga: 'Teste progressivo', note: 'Substitui barra fixa na adaptação.' },
+      { name: 'Remada Curvada com Barra', sets: 4, reps: '10', rest: 60, carga: 'Barra 10-15kg total', note: 'Puxa em direção ao umbigo. Lombar reta.' },
+      { name: 'Remada Unilateral com Halter', sets: 3, reps: '10 cada', rest: 60, carga: '10-12kg', note: 'Cotovelo sobe reto para cima.' },
+      { name: 'Encolhimento com Halteres', sets: 3, reps: '12', rest: 60, carga: '12-15kg cada', note: 'Segura 1s no topo. Braços retos.' },
+      { name: 'Tríceps Pulley com Barra Reta', sets: 3, reps: '12', rest: 60, carga: 'Leve', note: 'Cotovelos fixos ao lado do corpo.' },
+      { name: 'Tríceps Testa com Barra', sets: 3, reps: '10', rest: 60, carga: 'Barra 8-10kg total', note: 'Cotovelos apontam pro teto.' },
+      { name: 'Levantamento Terra', sets: 3, reps: '6', rest: 60, carga: 'Barra vazia (20kg) — aprenda antes de adicionar peso', note: '⚠️ Lombar reta. Exercício de respeito.' }
+    ]
+  },
+  X: {
+    label: 'Treino X — Calistenia + Cardio',
+    note: '🌿 3 rounds do circuito. Descanse 60s entre rounds.',
+    exercises: [
+      { name: 'Flexão de Braço', sets: 3, reps: '10', rest: 60, carga: 'Peso do corpo', note: 'Circuito — sem descanso entre exercícios.' },
+      { name: 'Prancha', sets: 3, reps: '30s', rest: 60, carga: 'Peso do corpo', note: 'Core contraído.' },
+      { name: 'Agachamento Livre (sem peso)', sets: 3, reps: '15', rest: 60, carga: 'Peso do corpo', note: 'Reforço da mecânica.' },
+      { name: 'Barra Negativa', sets: 3, reps: '5', rest: 60, carga: 'Peso do corpo', note: 'Desce em 5 segundos. Constrói força para barra real.' },
+      { name: 'Stairmaster', sets: 1, reps: '20-25min', rest: 0, carga: 'Ritmo moderado', note: 'Após o circuito.' }
+    ]
+  }
+};
+
+// ============================================================
+// LISTA DE COMPRAS
+// ============================================================
+const SHOP_LIST = [
+  { cat: '🥩 Proteínas', items: [
+    'Peito de frango — 2kg',
+    'Alcatra ou patinho — 1,5kg (inclui hambúrguer semanal)',
+    'Ovos — 30 unidades',
+    'Iogurte grego natural — 10 potes',
+    'Atum em lata — 3 latas (esposa)'
+  ]},
+  { cat: '🥔 Carboidratos', items: [
+    'Batata doce — 2kg',
+    'Arroz — 1 pacote 1kg',
+    'Aveia em flocos — 1 pacote 500g',
+    'Banana — 2 pencas',
+    'Maçã — 6 unidades',
+    'Feijão — 500g'
+  ]},
+  { cat: '🥛 Laticínios', items: [
+    'Leite integral — 3 caixas 1L',
+    'Nescau — 1 lata pequena',
+    'Queijo muçarela — 300g',
+    'Queijo minas — 1 peça pequena',
+    'Manteiga — 1 tablete pequeno'
+  ]},
+  { cat: '🥦 Legumes e Verduras', items: [
+    'Brócolis — 1 unidade',
+    'Couve flor — 1 unidade',
+    'Abóbora — 1 pedaço médio',
+    'Beterraba — 4 unidades',
+    'Tomate — 6 unidades',
+    'Pepino — 3 unidades',
+    'Milho — 2 espigas ou 1 lata'
+  ]},
+  { cat: '🍊 Frutas', items: [
+    'Laranja — 1 saco',
+    'Maracujá — 6 unidades',
+    'Abacate — 2 unidades',
+    'Pêssego ou melão — conforme época'
+  ]},
+  { cat: '🧃 Sucos e Bebidas', items: [
+    'Polpa de fruta variada — 10 unidades\n(laranja, maracujá, abacaxi, acerola, couve, inhame)',
+    'Adoçante stévia — 1 frasco gotinhas'
+  ]},
+  { cat: '🧂 Temperos e Outros', items: [
+    'Alho, sal, pimenta do reino, orégano, salsa',
+    'Pão Panco Premium — 1 pacote (uso 1x semana)'
+  ]}
+];
+
+// ============================================================
+// ESTADO
+// ============================================================
+let currentUser = 'marido';
+let anchorAnswers = { treina: null, horaTreino: null, empresa: null, horaAcordou: null };
+let anchorStep = 0;
+let currentTab = 'today';
+let timerInterval = null;
+let workoutSets = {}; // ex: { 'Supino Reto com Halteres_0': true }
+
+// ============================================================
+// UTILS
+// ============================================================
+function todayKey() { return new Date().toISOString().slice(0,10); }
+
+function youtubeShortsSearchUrl(exerciseName) {
+  // Remove parênteses e observações extras do nome pra busca ficar limpa
+  const clean = exerciseName.replace(/\(.*?\)/g, '').trim();
+  const query = encodeURIComponent(clean + ' execução correta shorts');
+  // sp=EgQQARgD filtra por: Tipo=Vídeo, Duração=Curta (até 4min) — combinado com "shorts" na busca prioriza vídeos curtos verticais
+  return 'https://www.youtube.com/results?search_query=' + query + '&sp=EgQQARgD';
+}
+
+function addMinutes(timeStr, mins) {
+  const [h, m] = timeStr.split(':').map(Number);
+  const total = h * 60 + m + mins;
+  const nh = Math.floor(total / 60) % 24;
+  const nm = total % 60;
+  return String(nh).padStart(2,'0') + ':' + String(nm).padStart(2,'0');
+}
+
+function formatDate() {
+  const d = new Date();
+  const days = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  return days[d.getDay()] + ', ' + d.getDate() + ' de ' + months[d.getMonth()];
+}
+
+function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+function load(key) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch(e) { return null; } }
+
+// ============================================================
+// USER SWITCH
+// ============================================================
+function setUser(u) {
+  currentUser = u;
+  document.getElementById('btnMarido').classList.toggle('active', u === 'marido');
+  document.getElementById('btnEsposa').classList.toggle('active', u === 'esposa');
+  // re-render tela atual
+  if (currentTab === 'diet') renderDiet();
+  if (currentTab === 'today') {
+    const saved = load('forja_anchors_' + u + '_' + todayKey());
+    if (saved) { anchorAnswers = saved; renderToday(); showScreen('today'); document.getElementById('bottomNav').classList.remove('hidden'); }
+    else { resetAnchors(); }
+  }
+}
+
+// ============================================================
+// ÂNCORAS
+// ============================================================
+function selectAnchor(key, val, el) {
+  anchorAnswers[key] = val;
+  el.parentElement.querySelectorAll('.chip').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  setTimeout(() => {
+    if (key === 'treina') {
+      if (val === 'nao' || val === 'talvez') { anchorStep = 2; showAnchorStep(2); }
+      else nextAnchorStep();
+    } else if (key === 'empresa') {
+      nextAnchorStep();
+    }
+  }, 180);
+}
+
+function nextAnchorStep() {
+  if (anchorStep === 1) anchorAnswers.horaTreino = document.getElementById('inputTreinoHora').value;
+  anchorStep++;
+  // esposa não tem pergunta de empresa
+  if (anchorStep === 2 && currentUser === 'esposa') { anchorAnswers.empresa = 'nao'; anchorStep = 3; }
+  showAnchorStep(anchorStep);
+}
+
+function showAnchorStep(n) {
+  document.querySelectorAll('.anchor-step').forEach((el,i) => el.classList.toggle('hidden', i !== n));
+  document.querySelectorAll('#anchorDots .dot').forEach((d,i) => d.classList.toggle('active', i === n));
+  // mostrar/esconder botão voltar
+  const backBtn = document.getElementById('anchorBackBtn');
+  if (backBtn) backBtn.classList.toggle('hidden', n === 0);
+}
+
+function prevAnchorStep() {
+  if (anchorStep <= 0) return;
+  // se estava no step 3 e pulou step 2 (esposa), volta pro step 1 ou 0
+  if (anchorStep === 3 && currentUser === 'esposa') {
+    anchorStep = anchorAnswers.treina === 'nao' || anchorAnswers.treina === 'talvez' ? 0 : 1;
+  } else if (anchorStep === 2 && (anchorAnswers.treina === 'nao' || anchorAnswers.treina === 'talvez')) {
+    anchorStep = 0;
+  } else {
+    anchorStep--;
+  }
+  // limpa resposta do step que voltou
+  if (anchorStep === 0) { anchorAnswers.treina = null; document.querySelectorAll('#step-0 .chip').forEach(c=>c.classList.remove('selected')); }
+  if (anchorStep === 1) { anchorAnswers.horaTreino = null; }
+  if (anchorStep === 2) { anchorAnswers.empresa = null; document.querySelectorAll('#step-2 .chip').forEach(c=>c.classList.remove('selected')); }
+  showAnchorStep(anchorStep);
+}
+
+function finishAnchors() {
+  anchorAnswers.horaAcordou = document.getElementById('inputAcordouHora').value;
+  save('forja_anchors_' + currentUser + '_' + todayKey(), anchorAnswers);
+  renderToday();
+  showScreen('today');
+  document.getElementById('bottomNav').classList.remove('hidden');
+}
+
+function resetAnchors() {
+  anchorAnswers = { treina: null, horaTreino: null, empresa: null, horaAcordou: null };
+  anchorStep = 0;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+  showAnchorStep(0);
+  document.getElementById('bottomNav').classList.add('hidden');
+  showScreenRaw('screen-anchors');
+}
+
+// ============================================================
+// NAVEGAÇÃO
+// ============================================================
+function showScreen(name) {
+  ['anchors','today','train','diet','history','shop'].forEach(s => {
+    document.getElementById('screen-' + s).classList.toggle('hidden', s !== name);
+  });
+  currentTab = name;
+}
+function showScreenRaw(id) {
+  ['screen-anchors','screen-today','screen-train','screen-diet','screen-history','screen-shop'].forEach(s => {
+    document.getElementById(s).classList.toggle('hidden', s !== id);
+  });
+}
+
+function goTab(tab, el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  showScreen(tab);
+  if (tab === 'diet') renderDiet();
+  if (tab === 'history') renderHistory();
+  if (tab === 'shop') renderShop();
+}
+
+// ============================================================
+// RENDER: HOJE
+// ============================================================
+function renderToday() {
+  const a = anchorAnswers;
+  const isMarido = currentUser === 'marido';
+
+  document.getElementById('todayEyebrow').textContent = formatDate();
+
+  // título
+  if (a.treina === 'sim') document.getElementById('todayTitle').textContent = 'Hoje é dia de treino 💪';
+  else if (a.treina === 'nao') document.getElementById('todayTitle').textContent = 'Hoje é dia de descanso';
+  else document.getElementById('todayTitle').textContent = 'Dia em aberto';
+
+  // subtítulo
+  let sub = '';
+  if (a.treina === 'sim' && a.horaTreino) sub += 'Treino às ' + a.horaTreino;
+  if (a.empresa === 'sim') sub += (sub ? ' • ' : '') + 'Dia de empresa';
+  if (a.horaAcordou) sub += (sub ? ' • ' : '') + 'Acordou às ' + a.horaAcordou;
+  document.getElementById('todaySubtitle').textContent = sub || '—';
+
+  // alerta bursite
+  const alertWrap = document.getElementById('todayAlertWrap');
+  if (a.treina === 'sim' && isMarido) {
+    alertWrap.innerHTML = '<div class="alert">⚠️ Lembre-se do ombro: máx 3kg na elevação lateral. Pare se sentir dor.</div>';
+  } else { alertWrap.innerHTML = ''; }
+
+  // card treino
+  const trainBody = document.getElementById('todayTrainBody');
+  if (a.treina === 'sim') {
+    const lastW = load('forja_lastWorkout_' + currentUser) || null;
+    const seq = ['A','B','C','X'];
+    const nextIdx = lastW ? (seq.indexOf(lastW.type) + 1) % seq.length : 0;
+    const suggested = seq[nextIdx];
+    const wData = WORKOUTS[suggested];
+    trainBody.innerHTML = `
+      <p style="color:var(--text-dim);font-size:12.5px;margin-bottom:10px">Sugestão baseada no último treino registrado</p>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:16px;font-weight:800">Treino ${suggested}</div>
+          <div style="color:var(--text-dim);font-size:12.5px">${wData.label.replace('Treino ' + suggested + ' — ','')}</div>
+        </div>
+        <button class="btn-primary" style="width:auto;padding:10px 18px;font-size:13px" onclick="goTabDirect('train')">Abrir ficha</button>
+      </div>`;
+  } else if (a.treina === 'nao') {
+    trainBody.innerHTML = '<p style="color:var(--text-dim);font-size:13px">Recuperação ativa. Beba bastante água hoje 💧</p>';
+  } else {
+    trainBody.innerHTML = '<p style="color:var(--text-dim);font-size:13px">Quando decidir, refaça as perguntas do dia.</p>';
+  }
+
+  // card refeições
+  let meals;
+  if (a.treina === 'nao' || a.treina === 'talvez') {
+    meals = isMarido ? MEALS_NO_TRAIN_MARIDO : MEALS_NO_TRAIN_ESPOSA;
+  } else {
+    meals = isMarido ? (a.empresa === 'sim' ? MEALS_MARIDO_EMPRESA : MEALS_MARIDO_NORMAL) : MEALS_ESPOSA_NORMAL;
+  }
+
+  const base = a.horaAcordou || '08:00';
+  const gaps = [0, 180, 360, a.treina === 'sim' ? (calcPreMins(a.horaTreino, base)) : 480, a.treina === 'sim' ? (calcPosMins(a.horaTreino, base)) : 600];
+
+  document.getElementById('todayMealsBody').innerHTML = meals.map((m, i) => {
+    const t = addMinutes(base, gaps[i] || i * 150);
+    return `<div class="meal-item">
+      <div class="meal-time">${t}</div>
+      <div>
+        <div class="meal-name">${m.name}</div>
+        <div class="meal-items">${m.items.replace(/\n/g,'<br>')}</div>
+        ${m.tag ? '<span class="meal-tag">' + m.tag + '</span>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function calcPreMins(horaTreino, horaAcordou) {
+  if (!horaTreino) return 480;
+  const [th, tm] = horaTreino.split(':').map(Number);
+  const [ah, am] = horaAcordou.split(':').map(Number);
+  const diff = (th * 60 + tm) - (ah * 60 + am) - 90; // 90min antes do treino
+  return Math.max(diff, 300);
+}
+function calcPosMins(horaTreino, horaAcordou) {
+  if (!horaTreino) return 600;
+  const [th, tm] = horaTreino.split(':').map(Number);
+  const [ah, am] = horaAcordou.split(':').map(Number);
+  const diff = (th * 60 + tm) - (ah * 60 + am) + 75; // ~75min após início do treino
+  return diff;
+}
+
+function goTabDirect(tab) {
+  document.querySelectorAll('.nav-item').forEach((n,i) => {
+    const tabs = ['today','train','diet','history','shop'];
+    n.classList.toggle('active', tabs[i] === tab);
+  });
+  showScreen(tab);
+  if (tab === 'train') loadWorkout('A', null);
+}
+
+// ============================================================
+// RENDER: TREINO
+// ============================================================
+function loadWorkout(type, el) {
+  if (el) {
+    document.querySelectorAll('#screen-train .chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  const w = WORKOUTS[type];
+  document.getElementById('trainTitle').textContent = w.label;
+  document.getElementById('trainSubtitle').textContent = w.note;
+
+  // cargas salvas
+  const savedLoads = load('forja_loads_' + currentUser) || {};
+
+  workoutSets = {};
+  const html = w.exercises.map((ex, ei) => {
+    const savedCarga = savedLoads[ex.name] || ex.carga;
+    const setsHtml = Array.from({length: ex.sets}).map((_,si) => {
+      const key = ex.name + '_' + si;
+      const done = workoutSets[key] || false;
+      return `<div class="set-box${done?' done':''}" onclick="toggleSet('${type}',${ei},${si},this)" id="set_${ei}_${si}">
+        Série ${si+1}${done?' ✓':''}
+      </div>`;
+    }).join('');
+
+    return `<div class="ex-item">
+      <div class="ex-header">
+        <div class="ex-name">${ex.name}</div>
+        <span class="badge">${ex.sets}×${ex.reps}</span>
+      </div>
+      <div class="ex-meta">Carga: <input
+        class="input-field"
+        style="display:inline;width:auto;padding:4px 8px;font-size:12px;margin-left:4px"
+        value="${savedCarga}"
+        onchange="saveCarga('${ex.name}',this.value)"
+        placeholder="ex: 10kg"></div>
+      <div class="ex-sets">${setsHtml}</div>
+      ${ex.note ? '<div class="ex-note">' + ex.note + '</div>' : ''}
+      <a href="${youtubeShortsSearchUrl(ex.name)}" target="_blank" rel="noopener"
+        style="display:inline-flex;align-items:center;gap:6px;margin-top:9px;background:var(--card-raised);border:1px solid var(--line);color:var(--green);font-size:12px;font-weight:700;padding:8px 12px;border-radius:20px;text-decoration:none">
+        ▶ Ver execução (vídeo curto)
+      </a>
+    </div>`;
+  }).join('');
+
+  document.getElementById('workoutBody').innerHTML = html +
+    `<button class="btn-primary" onclick="finishWorkout('${type}')">✅ Finalizar treino ${type}</button>`;
+}
+
+function toggleSet(type, ei, si, el) {
+  const key = WORKOUTS[type].exercises[ei].name + '_' + si;
+  workoutSets[key] = !workoutSets[key];
+  el.classList.toggle('done', workoutSets[key]);
+  el.textContent = 'Série ' + (si+1) + (workoutSets[key] ? ' ✓' : '');
+  if (workoutSets[key]) startTimer(WORKOUTS[type].exercises[ei].rest);
+}
+
+function saveCarga(exName, val) {
+  const loads = load('forja_loads_' + currentUser) || {};
+  loads[exName] = val;
+  save('forja_loads_' + currentUser, loads);
+}
+
+function finishWorkout(type) {
+  const record = { type, date: todayKey(), ts: Date.now() };
+  save('forja_lastWorkout_' + currentUser, record);
+  const hist = load('forja_workoutHist_' + currentUser) || [];
+  hist.unshift(record);
+  save('forja_workoutHist_' + currentUser, hist.slice(0,60));
+  alert('Treino ' + type + ' concluído! 💪 Ótimo trabalho!');
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer(secs) {
+  if (!secs) return;
+  stopTimer();
+  let remaining = secs;
+  document.getElementById('timerCount').textContent = remaining;
+  document.getElementById('timerOverlay').classList.remove('hidden');
+  timerInterval = setInterval(() => {
+    remaining--;
+    document.getElementById('timerCount').textContent = remaining;
+    if (remaining <= 0) stopTimer();
+  }, 1000);
+}
+function stopTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('timerOverlay').classList.add('hidden');
+}
+
+// ============================================================
+// RENDER: DIETA
+// ============================================================
+function renderDiet() {
+  const isMarido = currentUser === 'marido';
+  const meals = isMarido ? MEALS_MARIDO_NORMAL : MEALS_ESPOSA_NORMAL;
+  const label = isMarido ? 'Josias — dia normal' : 'Queila — dia normal';
+
+  let html = `<div class="eyebrow" style="margin-bottom:6px">${label}</div>`;
+  html += meals.map((m,i) => `
+    <div class="card">
+      <div class="card-title">Refeição ${i+1} — ${m.name}</div>
+      <div style="color:var(--text-dim);font-size:13px;line-height:1.6">${m.items.replace(/\n/g,'<br>')}</div>
+      ${m.tag ? '<div style="margin-top:8px"><span class="meal-tag">' + m.tag + '</span></div>' : ''}
+    </div>`).join('');
+
+  if (isMarido) {
+    html += `<div class="divider"></div>
+    <div class="eyebrow" style="margin-bottom:6px">Josias — dia de empresa</div>`;
+    html += MEALS_MARIDO_EMPRESA.map((m,i) => `
+      <div class="card">
+        <div class="card-title">Refeição ${i+1} — ${m.name}</div>
+        <div style="color:var(--text-dim);font-size:13px;line-height:1.6">${m.items.replace(/\n/g,'<br>')}</div>
+        ${m.tag ? '<div style="margin-top:8px"><span class="meal-tag">' + m.tag + '</span></div>' : ''}
+      </div>`).join('');
+  }
+
+  html += `<div class="divider"></div>
+  <div class="card">
+    <div class="card-title">🍔 Hambúrguer de patinho — 1x/semana</div>
+    <div style="color:var(--text-dim);font-size:13px;line-height:1.6">
+      ${isMarido ? '180g' : '150g'} patinho moído (cru) grelhado na Air Fryer<br>
+      1 pão (pode ser Panco nesse dia) • 1 fatia queijo muçarela<br>
+      Tomate, alface, pepino à vontade<br>
+      Suco natural com stévia<br>
+      <em style="font-size:11.5px">Acompanhe com batata doce assada no lugar de fritas</em>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">⚠️ Regras inegociáveis</div>
+    <div style="color:var(--text-dim);font-size:13px;line-height:1.8">
+      💧 Mínimo 2,5L de água por dia além dos sucos<br>
+      🚫 Nunca pule o pré treino<br>
+      🌿 Stévia sempre no lugar do açúcar<br>
+      🌙 Sem carboidrato pesado após 22h<br>
+      🥗 Legumes e salada sempre à vontade<br>
+      🍕 Pizza/pastel liberado 1-2x por mês sem culpa
+    </div>
+  </div>`;
+
+  document.getElementById('dietBody').innerHTML = html;
+}
+
+// ============================================================
+// RENDER: HISTÓRICO
+// ============================================================
+function renderHistory() {
+  const weights = load('forja_weights_' + currentUser) || [];
+  const loads = load('forja_loads_' + currentUser) || {};
+  const userName = PROFILES[currentUser].label;
+
+  // Atualiza título da tela com o nome
+  const histTitle = document.querySelector('#screen-history h1');
+  if (histTitle) histTitle.textContent = 'Evolução de ' + userName;
+
+  if (weights.length === 0) {
+    document.getElementById('weightHistory').innerHTML = '<div class="empty"><div class="ico">⚖️</div><p>Nenhum peso registrado ainda para ' + userName + '</p></div>';
+  } else {
+    document.getElementById('weightHistory').innerHTML = weights.slice(0,10).map(w =>
+      `<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)">
+        <span style="color:var(--text-dim);font-size:13px">${w.date}</span>
+        <span style="font-weight:700">${w.val} kg</span>
+      </div>`
+    ).join('');
+  }
+
+  const loadKeys = Object.keys(loads);
+  if (loadKeys.length === 0) {
+    document.getElementById('loadHistory').innerHTML = '<div class="empty"><p style="font-size:13px">Registre suas cargas nos treinos</p></div>';
+  } else {
+    document.getElementById('loadHistory').innerHTML = loadKeys.map(k =>
+      `<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)">
+        <span style="color:var(--text-dim);font-size:12.5px">${k}</span>
+        <span class="badge">${loads[k]}</span>
+      </div>`
+    ).join('');
+  }
+}
+
+function saveWeight() {
+  const val = parseFloat(document.getElementById('weightInput').value);
+  if (!val || val < 20 || val > 300) { alert('Peso inválido'); return; }
+  const weights = load('forja_weights_' + currentUser) || [];
+  weights.unshift({ val, date: todayKey() });
+  save('forja_weights_' + currentUser, weights.slice(0,365));
+  document.getElementById('weightInput').value = '';
+  renderHistory();
+}
+
+// ============================================================
+// RENDER: COMPRAS
+// ============================================================
+function renderShop() {
+  const saved = load('forja_shop_checked') || {};
+  let html = '';
+  SHOP_LIST.forEach((cat, ci) => {
+    html += `<div class="card"><div class="card-title">${cat.cat}</div>`;
+    html += cat.items.map((item, ii) => {
+      const key = ci + '_' + ii;
+      const checked = saved[key] || false;
+      return `<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer" onclick="toggleShop('${key}',this)">
+        <span style="font-size:18px;min-width:22px">${checked ? '✅' : '⬜'}</span>
+        <span style="font-size:13px;line-height:1.5;${checked?'color:var(--text-faint);text-decoration:line-through':''}">${item.replace(/\n/g,'<br>')}</span>
+      </div>`;
+    }).join('');
+    html += '</div>';
+  });
+  html += `<div style="background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);border-radius:13px;padding:14px;margin-bottom:12px;text-align:center">
+    <div style="color:var(--green);font-weight:700;font-size:14px">💰 Estimativa total</div>
+    <div style="font-size:22px;font-weight:800;margin-top:4px">R$ 145–170</div>
+    <div style="color:var(--text-dim);font-size:12px;margin-top:2px">para os dois por semana</div>
+  </div>`;
+  html += `<button class="btn-danger" onclick="clearShop()">Limpar lista ↺</button>`;
+  document.getElementById('shopBody').innerHTML = html;
+}
+
+function toggleShop(key, el) {
+  const saved = load('forja_shop_checked') || {};
+  saved[key] = !saved[key];
+  save('forja_shop_checked', saved);
+  renderShop();
+}
+function clearShop() {
+  save('forja_shop_checked', {});
+  renderShop();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(function init() {
+  const saved = load('forja_anchors_marido_' + todayKey());
+  if (saved) {
+    anchorAnswers = saved;
+    renderToday();
+    showScreen('today');
+    document.getElementById('bottomNav').classList.remove('hidden');
+  }
+
+  // Registra service worker para PWA instalável
+  if ('serviceWorker' in navigator) {
+    const swCode = `
+      const CACHE = 'mff-v1';
+      self.addEventListener('install', e => {
+        e.waitUntil(caches.open(CACHE).then(c => c.addAll(['./', './index.html'])));
+        self.skipWaiting();
+      });
+      self.addEventListener('activate', e => {
+        e.waitUntil(clients.claim());
+      });
+      self.addEventListener('fetch', e => {
+        e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+      });
+    `;
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
